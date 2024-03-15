@@ -1,24 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React, {useEffect} from 'react';
+import './styles/App.css';
+import Login from './Login';
+import Register from './Register';
+import Welcome from './Welcome';
+import { BrowserRouter as Router, Routes, Route, Switch } from 'react-router-dom';
+
 
 function App() {
+
+  useEffect(() => {
+    console.log('App component rendered');
+  });
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <div className="App">
+        <Router>
+          <Routes>
+            <Route path='/' element={<Welcome />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Register />} />
+          </Routes>
+          
+        </Router>
+
+      </div>
   );
 }
 
