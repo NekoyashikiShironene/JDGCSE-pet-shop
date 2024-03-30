@@ -1,0 +1,80 @@
+CREATE TABLE Customer (
+    CustID INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(20) NOT NULL,
+    pwd VARCHAR(20) NOT NULL,
+    cus_name VARCHAR(50) NOT NULL,
+    loc VARCHAR(150) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    tel VARCHAR(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE Employee (
+    EmpID INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(20) NOT NULL,
+    pwd VARCHAR(20) NOT NULL,
+    emp_name VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    tel VARCHAR(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE Product (
+    ProdID INT PRIMARY KEY AUTO_INCREMENT,
+    prod_name VARCHAR(100) NOT NULL,
+    detail VARCHAR(500) NOT NULL,
+    MFDate DATE NOT NULL,
+    EXPDate DATE,
+    PetType VARCHAR(20) NOT NULL,
+    price FLOAT NOT NULL,
+    RemainQty INT NOT NULL,
+    image_path VARCHAR(255)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE Cart (
+    CartID INT PRIMARY KEY AUTO_INCREMENT,
+    CustID INT NOT NULL,
+    FOREIGN KEY (CustID) REFERENCES Customer(CustID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY AUTO_INCREMENT,
+    CartID INT NOT NULL,
+    CustID INT NOT NULL,
+    EmpID INT,
+    Order_date DATE NOT NULL,
+    total_price FLOAT,
+    dst_address VARCHAR(255),
+    status_msg VARCHAR(255),
+    status_time TIMESTAMP,
+    FOREIGN KEY (CartID) REFERENCES Cart(CartID),
+    FOREIGN KEY (CustID) REFERENCES Customer(CustID),
+    FOREIGN KEY (EmpID) REFERENCES Employee(EmpID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE CartItem (
+    CartID INT,
+    ProdID INT,
+    quantity INT NOT NULL,
+    OrderID INT,
+    PRIMARY KEY (CartID, ProdID),
+    FOREIGN KEY (CartID) REFERENCES Cart(CartID),
+    FOREIGN KEY (ProdID) REFERENCES Product(ProdID),
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE Management (
+    EmpID INT,
+    ProdID INT,
+    method VARCHAR(255) NOT NULL,
+    ManageDate TIMESTAMP NOT NULL,
+    PRIMARY KEY (EmpID, ProdID, ManageDate),
+    FOREIGN KEY (EmpID) REFERENCES Employee(EmpID),
+    FOREIGN KEY (ProdID) REFERENCES Product(ProdID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE OrderStatus (
+    OrderID INT,
+    status_time TIMESTAMP,
+    status_msg VARCHAR(255) NOT NULL,
+    PRIMARY KEY (OrderID, status_time),
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
