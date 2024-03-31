@@ -1,9 +1,8 @@
 import bcrypt from "bcrypt";
 import Account from "./Account.mjs";
-import Admin from "./Admin.mjs";
-import Seller from "./Seller.mjs";
 import Customer from "./Customer.mjs";
 import axios from "axios";
+import Cart from "./Cart.mjs"
 
 class AccountManager {
     static instance;
@@ -43,7 +42,6 @@ class AccountManager {
             return {stt_code: 2, msg:"Username not founded"};
         }
         if (bcrypt.compareSync(password, account.password)){
-            
             return {stt_code: 1, msg: "Login successful"};
         }
         else{
@@ -51,8 +49,8 @@ class AccountManager {
         }
     }
 
-    async createSellerAccount(Account, username, password, name, email, tel, salary){
-        if (Account instanceof(Admin)){
+    async createSellerAccount(account, username, password, name, email, tel){
+        if (account.role === "Admin"){
             const account = AccountManager._accounts.find(acc => acc.username === username);  
         
             if (account){
@@ -67,13 +65,13 @@ class AccountManager {
                 emp_name: name,
                 email: email,
                 tel: tel,
-                salary: salary
+                role: "Seller"
             }
 
             const id = await axios.post('http://localhost:3001/create-emp', data);
 
             const accountmanager = new AccountManager();
-            const newSeller = new Seller(username, hashedPassword, name, email, tel, salary, id);
+            const newSeller = new Employee(username, hashedPassword, name, email, tel, id, data.role);
             accountmanager.addAccount(newSeller);
 
             return {stt_code: 1, msg: "Register successful"};
@@ -83,7 +81,7 @@ class AccountManager {
         }
     }
 
-    async createCustomerAccount(username, password, name, dob, email, tel, loc){
+    async createCustomerAccount(username, password, name, email, tel, loc){
         const account = AccountManager._accounts.find(acc => acc.username === username);  
         
         if (account){
@@ -101,19 +99,20 @@ class AccountManager {
             tel: tel
         }
 
-        const id = await axios.post('http://localhost:3001/register', data);
+        const reg_response = await axios.post('http://localhost:3001/register', data);
 
-        const newCustomer = new Customer(username, hashedPassword, name, email, tel, loc, id);
+        const newCustomer = new Customer(username, hashedPassword, name, email, tel, loc, reg_response.insertID);
         this.addAccount(newCustomer);
+
+        const cart_response = await axios.post("http://localhost:3001/createCart", reg_response.insertID);
+        const newCart = new Cart(response.insertID, cart_response.insertID);
 
         return {stt_code: 1, msg: "Register successful"};
     }
 
-    async setInfo(account, name, dob, email, tel){
+    async setInfo(account, name, email, tel){
         const error = [];
-        
         var nameRegex = /^(?!.*[!@#$%^&*(),.?":{}|<>])[^\s]{8,16}$/;
-
         const emailRegex = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/;
         const telRegex = /^\d{10}$/;
 
@@ -140,11 +139,9 @@ class AccountManager {
 
         const data = {
             name: name,
-            dob: dob,
             email: email,
             tel: tel,
         };
-        account.dob = dob || account.dob;
         const accType = getAccType(account);
 
         await axios.put(`/update-acc/${accType}/${account.id}`, data);

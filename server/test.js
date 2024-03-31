@@ -1,4 +1,4 @@
-import axios from "axios";
+const axios = require("axios");
 
 // Data for creating a customer
 const customerData = {
@@ -31,7 +31,7 @@ function createCustomer() {
 
 function createEmployee() {
   try {
-    const response = axios.post('http://localhost:3001/create_emp', employeeData);
+    const response = axios.post('http://localhost:3001/create-emp', employeeData);
     console.log('Employee created successfully:', response.data);
   } catch (error) {
     console.error('Error creating employee:', error.response.data);
@@ -39,25 +39,6 @@ function createEmployee() {
 }
 
 
-const getProduct = () => {
-  const requestData = {
-    // petType: "dog",
-    // minPrice: 50,
-  //  maxPrice: 20,
-    search: "2"
-  };
-
-  axios.get('http://localhost:3001/products', {
-    params: requestData
-  })
-    .then(response => {
-      console.log('Response:', response.data);
-    })
-    .catch(error => {
-      console.error('Error:', error.response.data);
-    });
-
-}
 
 const createProduct = () => {
   const data = {
@@ -144,30 +125,9 @@ const updateCartItem = (c, p, q) => {
 };
 
 
-class MyClass {
-  constructor() {
-      let x = 1;
-      const privateMethod = () => {
-          console.log("This is a private method.");
-      };
 
-      this.publicMethod = () => {
-          console.log("This is a public method.");
-          privateMethod();
-      };
 
-      this.printX = () => {
-          console.log(x);
-      }
-  }
-
-  publicMethod() {
-      console.log("This is a public method.");
-  }
-
-}
-
-const baseUrl = 'http://localhost:3001'; // Replace 'your_port' with your actual port number
+const baseUrl = 'http://localhost:3001'; 
 
 async function testCreateOrder() {
   try {
@@ -183,7 +143,23 @@ async function testCreateOrder() {
   }
 }
 
-getProduct();
+const data = {
+  role: "c"
+  : 1
+};
+
+const orderId = 7;
+
+// Make a POST request using Axios
+axios.get(`http://localhost:3001/update-order-stt/${orderId}`, data)
+  .then(response => {
+    console.log('Response:', response.data);
+    // Handle response data here
+  })
+  .catch(error => {
+    console.error('Error:', error.response.data);
+    // Handle errors here
+  });
 
 
 

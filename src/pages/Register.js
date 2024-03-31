@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import Account from './components/Account'
+import Account from '../classes/Account.mjs'
 
 function Register() {
     const [username, setUsername] = useState("");

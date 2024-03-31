@@ -15,6 +15,11 @@ const db = mysql.createConnection({
 });
 
 
+generateJson = (stt_code, msg, return_value = null) => {
+    return { stt_code: stt_code, msg: msg, return_value: return_value }
+}
+
+
 app.post("/register", (req, res) => {
     const username = req.body.username;
     const pwd = req.body.pwd;
@@ -28,27 +33,28 @@ app.post("/register", (req, res) => {
     db.query("INSERT INTO Customer(username, pwd, cus_name, loc, email, tel) \
       VALUES (?, ?, ?, ?, ?, ?)", values, (err, result) => {
         if (err) {
-            console.log(err);
+            res.send(generateJson(0, "Customer register failed"));
         } else {
-            res.send(result);
-            return result.insertId;
+            res.send(generateJson(1, "Customer register successful", result));
         }
     });
 
 });
 
 app.post("/create-emp", (req, res) => {
-    const {username, pwd, emp_name, email, tel, salary} = req.body;
+    const { username, pwd, emp_name, email, tel, role } = req.body;
 
-    const values = [username, pwd, emp_name, email, tel, salary];
+    const values = [username, pwd, emp_name, email, tel, role];
 
-    db.query("INSERT INTO Employee(username, pwd, emp_name, email, tel, salary) \
+    console.log(req.body);
+
+    db.query("INSERT INTO Employee(username, pwd, emp_name, email, tel, role) \
       VALUES (?, ?, ?, ?, ?, ?)", values, (err, result) => {
         if (err) {
             console.log(err);
+            res.status(500).send(generateJson(0, "Employee register failed"));
         } else {
-            res.send("Employee created successfully");
-            return result.insertId;
+            res.send(generateJson(1, "Employee register successfully", result));
         }
     });
 });
@@ -66,7 +72,7 @@ app.put("/update-acc/:acctype/:id", (req, res) => {
         table = "Employee";
         idColumn = "empid";
     } else {
-        return res.status(400).send("Invalid account ID");
+        return res.status(400).send(generateJson(-1, "Invalid account type"));
     }
 
     let updateQuery = `UPDATE ${table} SET `;
@@ -110,9 +116,9 @@ app.put("/update-acc/:acctype/:id", (req, res) => {
     db.query(updateQuery, values, (err, result) => {
         if (err) {
             console.log(err);
-            res.status(500).send("Error updating account");
+            res.status(500).send(generateJson(0, "Account update failed"));
         } else {
-            res.send(result);
+            res.send(generateJson(1, "Account update successful"));
         }
     });
 });
@@ -179,15 +185,16 @@ app.get("/products", (req, res) => {
     db.query(query, params, (err, result) => {
         if (err) {
             console.log(err);
-            res.status(500).send("Error fetching products");
+            res.status(500).send(generateJson(0, "Products fetch failed"));
         } else {
-            res.send(result);
+            res.send(generateJson(1, "Products fetch successful", result));
         }
     });
 });
 
-app.post("/createProduct", (req, res) => {
+app.post("/create-product", (req, res) => {
     const { prod_name, detail, MFDate, EXPDate, PetType, price, RemainQty, image_path, EmpID } = req.body;
+    console.log(req.body);
 
     const values = [prod_name, detail, MFDate, EXPDate, PetType, price, RemainQty, image_path];
 
@@ -195,7 +202,7 @@ app.post("/createProduct", (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)", values, (err, result) => {
         if (err) {
             console.log(err);
-            res.status(500).send("Error");
+            res.status(500).send(generateJson(0, "Product create failed"));
         } else {
             let ProdID = result.insertId;
             let values_str = values.map(String);
@@ -204,18 +211,16 @@ app.post("/createProduct", (req, res) => {
                 VALUES (?, ?, ?)", [EmpID, ProdID, method], (err, result) => {
                 if (err) {
                     console.log(err);
-                    res.status(500).send("Error");
-                    return {status_code: 2, msg: "Error"};
+                    res.status(500).send(generateJson(0, "Management update failed"));
                 } else {
-                    res.send("Product created successfully");
-                    return {status_code: 1, msg: "Product created successfully", insertID: result.insertId}
+                    res.send(generateJson(1, "Management update successful", result));
                 }
             });
         };
     });
 });
 
-app.put("/updateProduct/:prodid", (req, res) => {
+app.put("/update-product/:prodid", (req, res) => {
     const prodID = req.params.prodid;
     const { name, Detail, MFDate, EXPDate, RemainQty, PetType, Price, image_path, EmpID } = req.body;
 
@@ -270,8 +275,7 @@ app.put("/updateProduct/:prodid", (req, res) => {
     db.query(updateQuery, values, (err, result) => {
         if (err) {
             console.log(err);
-            res.status(500).send("Error updating product");
-            return {status_code: 2};
+            res.status(500).send(generateJson(0, "Product update failed"));
         } else {
             let values_str = values.map(String);
             let method = "Updated product: \n" + values_str.join("\n");
@@ -279,27 +283,25 @@ app.put("/updateProduct/:prodid", (req, res) => {
                 VALUES (?, ?, ?)", [EmpID, prodID, method], (err, result) => {
                 if (err) {
                     console.log(err);
-                    res.status(500).send("Error");
+                    res.status(500).send(generateJson(0, "Product update failed"));
                 } else {
-                    res.send("Product updated successfully");
+                    res.send(generateJson(1, "Product update successful", result));
                 }
             });
-            res.send("Product updated successfully");
-            return {status_code: 1};
         }
     });
 });
 
-app.post("/createCart", (req, res) => {
+app.post("/create-cart", (req, res) => {
     const { custid } = req.body;
     db.query("SELECT * FROM Cart WHERE CustID = ?", [custid], (err, result) => {
         if (result.length == 0) {
             db.query("INSERT INTO Cart(CustID) VALUES(?)", [custid], (err, result) => {
                 if (err) {
                     console.log(err);
-                    res.status(500).send("Error adding cart");
+                    res.status(500).send(generateJson(0, "Cart create failed"));
                 } else {
-                    res.send("Cart created successfully");
+                    res.send(generateJson(1, "Cart create successful", result));
                 }
             });
         }
@@ -310,21 +312,21 @@ app.post("/createCart", (req, res) => {
 
 });
 
-app.post("/addCartItem", (req, res) => {
+app.post("/add-carttem", (req, res) => {
     const { CartID, ProdID, quantity } = req.body;
     values = [CartID, ProdID, quantity];
 
     db.query("INSERT INTO cartitem VALUES(?, ?, ?)", values, (err, result) => {
         if (err) {
             console.log(err);
-            res.status(500).send("Error adding cartitem");
+            res.status(500).send(generateJson(0, "CartItem add failed"));
         } else {
-            res.send("Cartitem added successfully");
+            res.send(generateJson(1, "CartItem add successful", result));
         }
     });
 });
 
-app.put("/updateCartItem", (req, res) => {
+app.put("/update-cart-item", (req, res) => {
     const { CartID, ProdID, quantity } = req.body;
     values = [quantity, CartID, ProdID];
 
@@ -336,9 +338,9 @@ app.put("/updateCartItem", (req, res) => {
                 WHERE CartID=? AND ProdID=?", values, (err, result) => {
                     if (err) {
                         console.log(err);
-                        res.status(500).send("Error adding cartitem");
+                        res.status(500).send(generateJson(0, "CartItem update failed"));
                     } else {
-                        res.send("Cartitem updated successfully");
+                        res.send(generateJson(1, "CartItem update successful"));
                     }
                 });
             }
@@ -347,18 +349,18 @@ app.put("/updateCartItem", (req, res) => {
                     WHERE CartID=? AND ProdID=?", [CartID, ProdID], (err, result) => {
                     if (err) {
                         console.log(err);
-                        res.status(500).send("Error adding cartitem");
+                        res.status(500).send(generateJson(0, "CartItem delete failed"));
                     } else {
-                        res.send("Cartitem updated successfully");
+                        res.send(generateJson(1, "CartItem delete successful"));
                     }
                 });
             } else {
-                res.status(400).send("Quantity out of range");
+                res.status(400).send(generateJson(-1, "Quantity out of range"));
             }
         }
 
         else {
-            res.status(400).send("Cartitem does not exist");
+            res.status(400).send(generateJson(-1, "Cartitem does not exist"));
         }
     });
 
@@ -366,25 +368,25 @@ app.put("/updateCartItem", (req, res) => {
 
 });
 
-app.post("/createOrder", (req, res) => {
+app.post("/create-order", (req, res) => {
     const { CartID, CustID, dst_address, products } = req.body;
     const update = (values) => {
         db.query("INSERT INTO orders(CartID, CustID, dst_address) VALUES(?, ?, ?)", values, (err, result) => {
-        if (err) {
-            console.log(err);
-            res.status(500).send("Error create order");
-        } else {
-            orderId = result.insertId;
-            db.query("UPDATE cartitem SET OrderID=? WHERE ProdID IN (?)", [orderId, products.join(",")], (err, result) => {
-                if (err) {
-                    console.log(err);
-                    res.status(500).send("Error create order");
-                } else {
-                    res.send("Created!");;
-                }
-            });
-        }
-    });
+            if (err) {
+                console.log(err);
+                res.status(500).send(generateJson(0, "Order create failed"));
+            } else {
+                orderId = result.insertId;
+                db.query("UPDATE cartitem SET OrderID=? WHERE ProdID IN (?)", [orderId, products.join(",")], (err, result) => {
+                    if (err) {
+                        console.log(err);
+                        res.status(500).send(generateJson(0, "Order create failed"));
+                    } else {
+                        res.send(generateJson(1, "Order create successful"));;
+                    }
+                });
+            }
+        });
     }
 
     if (dst_address === undefined) {
@@ -394,39 +396,121 @@ app.post("/createOrder", (req, res) => {
     } else {
         update([CartID, CustID, dst_address]);
     }
-
 });
 
-
-app.post("/updateOrderStt/:orderId", (req, res) => {
+app.post("/update-order-stt/:orderId", (req, res) => {
     const orderId = req.params.orderId;
-    const { stt } = req.body;
+    const { stt, EmpID } = req.body;
 
     db.query("INSERT INTO orderstatus(OrderID, status_msg) VALUES(?, ?)", [orderId, stt], (err, result) => {
         if (err) {
             console.log(err);
-            res.status(500).send("Error update order status");
+            res.status(500).send(generateJson(0, "OrderStatus update failed"));
         } else {
-            res.send("order updated successfully");
+            db.query("UPDATE orders SET EmpID=? WHERE OrderID=? AND EmpID IS NULL", [EmpID, orderId], (err, result) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send(generateJson(0, "OrderStatus update failed"));
+                } else {
+                    res.send(generateJson(1, "OrderStatus update successful", result));
+                }
+            });
+
         }
     });
-
 });
 
-app.get("/getCartID/:custID", (req, res) => {
+app.get("/get-cart-id/:custID", (req, res) => {
     const custID = req.params.custID;
 
-    db.query("SELECT * FROM Cart WHERE CartID=?", custID, (err, result) => {
+    db.query("SELECT o.OrderID, o.CustID, c.username AS customer_username,\
+        c.email AS customer_email, e.EmpID, e.username AS employee_username,\
+        e.email AS employee_email, p.prod_name, p.price AS product_price,\
+        ci.quantity AS product_quantity, o.total_price, o.dst_address,\
+        os.status_msg AS order_status, os.status_time AS status_update_time\
+        FROM Orders o \
+        JOIN Cart c ON o.CartID = c.CartID\
+        JOIN Employee e ON o.EmpID = e.EmpID\
+        JOIN CartItem ci ON o.OrderID = ci.OrderID\
+        JOIN Product p ON oi.ProdID = p.ProdID\
+        LEFT JOIN OrderStatus os ON o.OrderID = os.OrderID\
+        WHERE o.CustID = ?", custID, (err, result) => {
         if (err) {
             console.log(err);
-            res.status(500).send("Error");
+            res.status(500).send(generateJson(0, "CartID fetch failed"));
         } else {
-            return result.CartID;
+            res.send(generateJson(1, "CartID fetch successful", result));
         }
     })
 });
 
+app.get("/cal-total-price/:cartID", (req, res) => {
+    const cartID = req.params.cartID;
+    const SelectedProd = req.body.SelectedProd;
+
+    if (SelectedProd.length === 0) {
+        res.send(generateJson(1, "No item in cart", 0));
+    }
+
+    db.query("SELECT SUM(p.price * ci.quantity)\
+            FROM Cart c\
+            JOIN CartItem ci ON c.CartID = ci.CartID\
+            JOIN Product p ON ci.ProdID = p.ProdID\
+            WHERE c.CartID=? AND p.ProdID IN (?)", [cartID, SelectedProd.join(",")], (err, result) => {
+        if (err) {
+            res.status(500).send(generateJson(0, "TotalPrice calculate failed"));
+        }
+        else {
+            if (result.length > 0) {
+                const total_price = result[0].total_price;
+                res.send(generateJson(1, "TotalPrice calculate successful", total_price));
+            }
+            else {
+                res.status(500).send(generateJson(0, "TotalPrice calculate failed"));
+            }
+        }
+    });
+});
+
+app.get("/get-order", (req, res) => {
+    const { role, uid } = req.body;
+    let id;
+    if (uid === undefined) {
+        id = null;
+    } else {
+        id = uid;
+    }
+        
+    if (role === "e") {
+        db.query(`SELECT * FROM orders WHERE EmpID ${id ? "=" : "IS"} ?`, [id], (err, result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send(generateJson(0, "Orders fetch failed"));
+            } else {
+                res.send(generateJson(1, "Orders fetch successful", result));
+            }
+        });
+    }
+    else if (role === "c") {
+        db.query("SELECT o.OrderID, o.CustID, cu.username AS customer_username, cu.email AS customer_email,\
+            e.username AS employee_username, e.email AS employee_email, p.prod_name, p.price AS product_price,\
+            ci.quantity AS product_quantity, o.dst_address, os.status_msg AS order_status, os.status_time AS status_update_time\
+            FROM Orders` o JOIN Customer cu ON o.CustID = cu.CustID LEFT JOIN Employee e ON o.EmpID = e.EmpID\
+            JOIN CartItem ci ON o.OrderID = ci.OrderID JOIN Product p ON ci.ProdID = p.ProdID\
+            LEFT JOIN OrderStatus os ON o.OrderID = os.OrderID WHERE o.CustID = ?", [id], (err, result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send(generateJson(0, "Orders fetch failed"));
+            } else {
+                res.send(generateJson(1, "Orders fetch successful", result));
+            }
+        });
+    } else {
+        res.status(400).send(generateJson(-1, "Role not found"));
+    }
+
+});
 
 app.listen(3001, () => {
-    console.log("Running on port 3001")
+    console.log("Running on port 3001");
 });

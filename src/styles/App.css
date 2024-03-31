@@ -1,49 +1,11 @@
-header {
-  width: 100%;
-  position: fixed;
-  top: 0;
-  background-color: #FAF9F6;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-}
-.nav-menu, .nav-acc-menu {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-}
-
-.nav-menu li {
-  margin-right: 20px;
-  text-decoration: none;
-  color: black;
-}
-
-.nav-acc-menu li {
-  margin-right: 20px;
+.main-container {
+    margin: 70px;
 }
 
 
-.App {
-  text-align: center;
-}
 
-.App-header {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
+
+
 
 
 

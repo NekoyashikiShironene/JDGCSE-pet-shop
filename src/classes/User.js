@@ -1,8 +1,6 @@
 import AccountManager from "./AccountManager.mjs";
 import Account from "./Account.mjs";
 import Employee from "./Employee.mjs";
-import Admin from "./Admin.mjs";
-import Seller from "./Seller.mjs";
 import ProductController from "./ProductController.mjs";
 import ProductView from "./ProductView.mjs";
 import Product from "./Product.mjs";
@@ -24,12 +22,8 @@ accManager.login("Jojo", "testd");
 
 
 const pm = new ProductModel();
-
 pm.getProduct("Dog").then(data => {
     console.log(data);
 }).catch(error => {
     console.error(error);
 });
-
-
-

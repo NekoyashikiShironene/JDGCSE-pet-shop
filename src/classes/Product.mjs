@@ -10,14 +10,7 @@ class Product{
         this.remainQty = remainQty;
         this.petType = petType;
         this.image_path = image_path;
-    }
-
-    setRemainQty(quantity){
-        this.remainQty = quantity;
-    }
-
-    getRemainQty(){
-        return this.remainQty;
+        this.id = undefined;
     }
 
     setProductID(prod_id){

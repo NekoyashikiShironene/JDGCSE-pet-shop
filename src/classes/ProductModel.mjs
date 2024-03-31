@@ -63,7 +63,7 @@ class ProductModel {
     }
 
     async updateProduct(prod_id, data){
-        const status = await axios.put(`/updateProduct/${prod_id}`, data);
+        const status = await axios.put(`${this.endpoint_url}/updateProduct/${prod_id}`, data);
 
         if (status.status_code === 1){
             const product = this.products.find(item => item.prod_id === prod_id);
