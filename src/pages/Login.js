@@ -31,8 +31,8 @@ function Login() {
                     <Card.Title style={{textAlign: 'center', fontSize: '30px'}}>Login</Card.Title>
                     <Form onSubmit={onLogin}>
                         <Form.Group controlId="formBasicUsername" className="mt-3">
-                            <Form.Label style={{fontSize: '18px'}}>Username</Form.Label>
-                            <Form.Control type="text" placeholder="Enter username" value={username} onChange={handleUsername} />
+                            <Form.Label style={{fontSize: '18px'}} >Username</Form.Label>
+                            <Form.Control type="text" placeholder="Enter username" value={username} onChange={handleUsername}/>
                         </Form.Group>
 
                         <Form.Group controlId="formBasicPassword" className="mt-3">

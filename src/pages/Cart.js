@@ -8,6 +8,12 @@ import { Container, Row, Col, Card, Button, Form, CloseButton } from 'react-boot
 
 function Cart() {
     const [quantity, setQuantity] = useState(0);
+    const navigate = useNavigate();
+
+    const checkout = (event) => {
+        
+        navigate("/checkout");
+    }
     return (
         <div>
             <HomeNavbar />
@@ -47,7 +53,7 @@ function Cart() {
                         </Card>
 
                         <div style={{ textAlign: "center", margin: "20px" }}>
-                            <Button variant="primary" style={{ marginRight: "10px" }}>Checkout</Button>
+                            <Button variant="primary" style={{ marginRight: "10px" }} onClick={checkout}>Checkout</Button>
                         </div>
                     </Form>
                 </Container>

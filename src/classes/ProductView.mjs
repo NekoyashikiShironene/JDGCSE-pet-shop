@@ -1,3 +1,5 @@
+import Product from "./Product.mjs";
+
 class ProductView {
 
     displayProduct(product) {

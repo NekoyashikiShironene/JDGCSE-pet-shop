@@ -8,6 +8,7 @@ import Cart from './Cart.js';
 import Checkout from './Checkout.js';
 import { BrowserRouter as Router, Routes, Route, Switch } from 'react-router-dom';
 import HomeNavbar from '../components/HomeNavbar.js';
+import Orders from './Orders.js';
 
 function App() {
 
@@ -27,6 +28,7 @@ function App() {
             <Route path="/product/:id" element={<ProductDetail />} />\
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/orders" element={<Orders />} />
           </Routes>
         </Router>
 

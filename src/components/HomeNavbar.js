@@ -32,7 +32,7 @@ function HomeNavbar() {
                                         <Link to="/cart">
                                             <Button variant="primary" className='mx-2'>My Cart</Button>
                                         </Link>
-                                        <Link to="/cart">
+                                        <Link to="/orders">
                                             <Button variant="primary" className='mx-2'>My Orders</Button>
                                         </Link>
 
