@@ -2,20 +2,35 @@ import React, { useState } from "react";
 import { Card, Form, Button } from "react-bootstrap";
 import Account from '../classes/Account.mjs'
 import { useNavigate } from "react-router-dom";
+import AccountManager from "../classes/AccountManager.mjs";
 
 function Register() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
-    const [DOB, setDOB] = useState("");
+    const [Loc, setLoc] = useState("");
     const [Email, setEmail] = useState("");
     const [Tel, setTel] = useState("");
 
     const navigate = useNavigate();
 
     const onRegister = (event) => {
-       navigate("/");
+        event.preventDefault();
+        const createAcc = async () => {
+            const am = new AccountManager();
+            try {
+                const response = await am.createCustomerAccount(username, password, name, Email, Tel, Loc);
+                console.log("ok");
+                navigate("/login");
+            } catch (error) {
+                console.error("Error creating account:", error);
+                alert(error.message);
+            }  
+        }
+        createAcc();
+        return () => {};
     }
+    
 
     const handleUsername = (event) => {
         setUsername(event.target.value);
@@ -30,8 +45,8 @@ function Register() {
         setName(event.target.value);
     }
 
-    const handleDOB = (event) => {
-        setDOB(event.target.value);
+    const handleLoc = (event) => {
+        setLoc(event.target.value);
 
     }
 
@@ -52,32 +67,32 @@ function Register() {
                         <Form onSubmit={onRegister}>
                             <Form.Group controlId="formBasicUsername" className="mt-3">
                                 <Form.Label style={{ fontSize: '18px' }}>Username</Form.Label>
-                                <Form.Control type="text" placeholder="Enter username" value={username} onChange={handleUsername} />
+                                <Form.Control type="text" placeholder="Enter username" value={username} onChange={handleUsername} pattern="" required />
                             </Form.Group>
 
                             <Form.Group controlId="formBasicPassword" className="mt-3">
                                 <Form.Label style={{ fontSize: '18px' }}>Password</Form.Label>
-                                <Form.Control type="password" placeholder="Password" value={password} onChange={handlePassword} />
+                                <Form.Control type="password" placeholder="Password" value={password} onChange={handlePassword} pattern="" required />
                             </Form.Group>
 
                             <Form.Group controlId="formBasicName" className="mt-3">
                                 <Form.Label style={{ fontSize: '18px' }}>Name</Form.Label>
-                                <Form.Control type="text" placeholder="Enter name" value={name} onChange={handleName} />
-                            </Form.Group>
-
-                            <Form.Group controlId="formBasiDOBUsername" className="mt-3">
-                                <Form.Label style={{ fontSize: '18px' }}>Date of Birth</Form.Label>
-                                <Form.Control type="date" placeholder="Enter dob" value={DOB} onChange={handleDOB} />
+                                <Form.Control type="text" placeholder="Enter name" value={name} onChange={handleName} pattern="" required />
                             </Form.Group>
 
                             <Form.Group controlId="formBasicEmail" className="mt-3">
                                 <Form.Label style={{ fontSize: '18px' }}>Email</Form.Label>
-                                <Form.Control type="tel" placeholder="Enter email" value={Email} onChange={handleEmail} />
+                                <Form.Control type="tel" placeholder="Enter email" value={Email} onChange={handleEmail} pattern="[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,})" required />
+                            </Form.Group>
+
+                            <Form.Group controlId="formBasiLocation" className="mt-3">
+                                <Form.Label style={{ fontSize: '18px' }}>Address</Form.Label>
+                                <Form.Control as="textarea" rows={3} placeholder="Enter address" value={Loc} onChange={handleLoc} pattern=""required />
                             </Form.Group>
 
                             <Form.Group controlId="formBasicTel" className="mt-3">
                                 <Form.Label style={{ fontSize: '18px' }}>Tel.</Form.Label>
-                                <Form.Control type="text" placeholder="Enter tel" value={Tel} onChange={handleTel} pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" />
+                                <Form.Control type="text" placeholder="Enter tel" value={Tel} onChange={handleTel} pattern="[0-9]{10}" required />
                             </Form.Group>
 
                             <Button variant="primary" type="submit" block className="mt-3">
