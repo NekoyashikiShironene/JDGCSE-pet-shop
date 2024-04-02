@@ -17,7 +17,13 @@ function HomeNavbar() {
         <div className='fixed-top'>
             <Navbar bg="light" expand="lg">
                 <Container>
-                    <Navbar.Brand href="/">SE petshop</Navbar.Brand>
+                    <Navbar.Brand href="/"><img
+                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLC7usNgllGe7AuyP3ZBtzu76y-birIOVM1LpCAL5hlw&s"
+                        width="50"
+                        height="50"
+                        className="d-inline-block align-top"
+                        alt="SE petshop logo"
+                    /></Navbar.Brand>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="mr-auto">
@@ -40,21 +46,19 @@ function HomeNavbar() {
                                                     <Link to="/orders">
                                                         <Button variant="primary" className='mx-2'>My Orders</Button>
                                                     </Link>
-
-
                                                 </>
 
                                             )}
 
 
-                                        {["Employee", "Admin"].includes(account.role) && (
+                                        {["Seller", "Admin"].includes(account.role) && (
                                             <>
 
                                                 <Link to="/customer-orders">
                                                     <Button variant="success" className='mx-2'>New Orders</Button>
                                                 </Link>
 
-                                                <Link to="/cart">
+                                                <Link to="/order-status">
                                                     <Button variant="primary" className='mx-2'>Order status</Button>
                                                 </Link>
 
@@ -66,12 +70,16 @@ function HomeNavbar() {
 
                                         {account.role === "Admin" && (
                                             <>
-                                                <Link to="/orders">
-                                                    <Button variant="success" className='mx-2'>New Orders</Button>
+                                                <Link to="/seller-list">
+                                                    <Button variant="outline-info" className='mx-2'>Seller List</Button>
                                                 </Link>
 
-                                                <Link to="/cart">
-                                                    <Button variant="success" className='mx-2'>Order status</Button>
+                                                <Link to="/add-emp">
+                                                    <Button variant="success" className='mx-2'>Add Seller</Button>
+                                                </Link>
+
+                                                <Link to="/add-product">
+                                                    <Button variant="success" className='mx-2'>Manage Product</Button>
                                                 </Link>
 
 
@@ -80,7 +88,7 @@ function HomeNavbar() {
                                         )}
 
 
-                                        <Link to="/cart">
+                                        <Link to="/user-profile">
                                             <Button variant="primary" className='mx-2'>My Account</Button>
                                         </Link>
 

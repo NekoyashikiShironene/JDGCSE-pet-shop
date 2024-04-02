@@ -8,7 +8,6 @@ class ProductView {
         console.log(`Detail: ${product.detail}`);
     }
 
-    
 }
 
 export default ProductView;

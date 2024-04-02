@@ -34,7 +34,6 @@ function Products() {
                 if (!data.stt_code) {
                     throw new Error("Data fetch failed");
                 }
-                console.log("Yesh")
                 setProducts(data.return_value);
                 setLoading(false);
                 setError(null);
@@ -89,7 +88,7 @@ function Products() {
                             {products.map(item => (
                                 <Col lg={4} md={6} sm={12} className="mb-4" key={item.ProdID}>
                                     <Card onClick={(event) => onClickProduct(event, item.ProdID)} style={{ cursor: "pointer" }}>
-                                        <Card.Img variant="top" src={item.image_path} />
+                                        <Card.Img variant="top" src={item.image_path} style={{ width: '400px', height: '400px' }} />
                                         <Card.Body>
                                             <Card.Title>{item.prod_name}</Card.Title>
                                             <Card.Text>{item.price + "฿"}</Card.Text>

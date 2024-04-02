@@ -3,20 +3,33 @@ import ProductModel from "./ProductModel.mjs"
 import ProductView from "./ProductView.mjs";
 
 class ProductController {
-    static model = new ProductModel();
-    static view = new ProductView();
-
-    addProduct(name, detail, MFDate, ExpDate, price, remainQty, petType, image_path, EmpID) {
-
-        const product = new Product(name, detail, MFDate, ExpDate, price, remainQty, petType, image_path);
-        const response = model.addProduct(product, EmpID);
-        product.setProductID(response.insertID);
+    constructor(){
+        this.model = new ProductModel();
+        this.view = new ProductView();
     }
     
-    searchProduct(petType, minPrice, maxPrice, search){
-        this.model.getProduct(petType, minPrice, maxPrice, search);
+    async addProduct(name, detail, MFDate, ExpDate, price, remainQty, petType, image_path, EmpID) {
+        const data = {
+            prod_name: name, 
+            detail: detail, 
+            MFDate: MFDate, 
+            EXPDate: ExpDate, 
+            PetType: petType, 
+            price: price, 
+            RemainQty: remainQty, 
+            image_path: image_path,
+            EmpID: EmpID 
+        }
 
-        this.view.displayProduct(product);
+        const response = await this.model.addProduct(data, EmpID);
+
+        const product = new Product(response.return_value.insertId, name, detail, MFDate, ExpDate, price, remainQty, petType, image_path);
+    }
+    
+    async searchProduct(petType, minPrice, maxPrice, search){
+        const data = await this.model.getProduct(petType, minPrice, maxPrice, search);
+       // this.view.displayProduct(product);
+        return data;
     }
     
     addProductToCart(cart, ProductID){

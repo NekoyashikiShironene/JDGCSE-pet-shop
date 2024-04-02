@@ -9,22 +9,11 @@ class ProductModel {
         this.endpoint_url = `http://localhost:${this.port}`;
     }
 
-    async addProduct(product, EmpID) {
-        const data = {
-            prod_name: product.prod_name,
-            detail: product.detail,
-            MFDate: product.MFDate,
-            EXPDate: product.EXPDate,
-            PetType: product.petType,
-            price: product.price,
-            RemainQty: product.RemainQty,
-            image_path: product.image_path,
-            EmpID: EmpID
-        }
+    async addProduct(data) {
         try {
-            const response = await axios.post(`${this.endpoint_url}/createProduct`, data);
+            const response = await axios.post(`${this.endpoint_url}/create-product`, data);
             if (response.status_code === 1){
-                this.products.push(product);
+                this.products.push(response);
             }
             return response;
         } catch (error) {
@@ -63,7 +52,7 @@ class ProductModel {
     }
 
     async updateProduct(prod_id, data){
-        const status = await axios.put(`${this.endpoint_url}/updateProduct/${prod_id}`, data);
+        const status = await axios.put(`${this.endpoint_url}/update-product/${prod_id}`, data);
 
         if (status.status_code === 1){
             const product = this.products.find(item => item.prod_id === prod_id);

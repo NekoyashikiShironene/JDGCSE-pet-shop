@@ -1,12 +1,13 @@
-import bcrypt from "bcrypt";
 import Account from "./Account.mjs";
 import Customer from "./Customer.mjs";
+import Employee from "./Employee.mjs";
 import axios from "axios";
-import Cart from "./Cart.mjs"
+import Cart from "./Cart.mjs";
+import argon2 from "argon2";
+import { SHA256, enc } from 'crypto-js';
 
 class AccountManager {
     static instance;
-    static _accounts = [];
 
     constructor() {
 
@@ -17,48 +18,49 @@ class AccountManager {
         return AccountManager.instance;
     }
 
-    static getInstance() {
+    
 
+    encryptText(text) {
+        const hash = SHA256(text).toString();
+        return hash;
+    }
+
+    static getInstance() {
         if (!AccountManager.instance) {
             return new AccountManager();
         }
-
         return AccountManager.instance;
-    }
-
-    addAccount(account){
-        AccountManager._accounts.push(account);
     }
 
     static getAccounts(){
         return AccountManager._accounts;
     }
 
-    login(username, password){
-
-        const account = AccountManager._accounts.find(acc => acc.username === username);
-
+    async login(username, password){
+        const response = await axios.get('http://localhost:3001/check-login');
+        const usernames = response.data.return_value;
+        const account = usernames.find(acc => acc.username === username);
+        
         if (!account){
             return {stt_code: 2, msg:"Username not founded"};
         }
-        if (bcrypt.compareSync(password, account.password)){
+
+        const hashedPassword = this.encryptText(password);
+
+
+        if (hashedPassword.startsWith(account.pwd)) {
             return {stt_code: 1, msg: "Login successful"};
         }
         else{
-            return {stt_code: 2, msg: "Incorrect password"};
+            return {stt_code: 2, msg: "Incorrect Password"};
         }
     }
 
     async createSellerAccount(account, username, password, name, email, tel){
         if (account.role === "Admin"){
-            const account = AccountManager._accounts.find(acc => acc.username === username);  
-        
-            if (account){
-                return {stt_code: 2, msg: "Username already existed"};
-            }
 
-            const hashedPassword = bcrypt.hashSync(password, 10);
-
+            const hashedPassword = this.encryptText(password);
+            
             const data = {
                 username: username,
                 pwd: hashedPassword,
@@ -69,11 +71,6 @@ class AccountManager {
             }
 
             const id = await axios.post('http://localhost:3001/create-emp', data);
-
-            const accountmanager = new AccountManager();
-            const newSeller = new Employee(username, hashedPassword, name, email, tel, id, data.role);
-            accountmanager.addAccount(newSeller);
-
             return {stt_code: 1, msg: "Register successful"};
         }
         else{
@@ -82,14 +79,9 @@ class AccountManager {
     }
 
     async createCustomerAccount(username, password, name, email, tel, loc){
-        const account = AccountManager._accounts.find(acc => acc.username === username);  
-        
-        if (account){
-            return {stt_code: 2, msg: "Username already existed"};
-        }
+        console.log(password);
+        const hashedPassword = this.encryptText(password);
 
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        
         const data = {
             username: username, 
             pwd: hashedPassword,
@@ -99,39 +91,42 @@ class AccountManager {
             tel: tel
         }
 
-        const reg_response = await axios.post('http://localhost:3001/register', data);
+        try {
+            
+            const reg_response = await axios.post('http://localhost:3001/register', data);
+            const newCustomer = new Customer(username, hashedPassword, name, email, tel, loc, reg_response.data.return_value.insertId);
 
-        const newCustomer = new Customer(username, hashedPassword, name, email, tel, loc, reg_response.insertID);
-        this.addAccount(newCustomer);
+            const cart_response = await axios.post("http://localhost:3001/create-cart", {custid: reg_response.data.return_value.insertId});
+            const newCart = new Cart(cart_response.data.return_value.insertId);
 
-        const cart_response = await axios.post("http://localhost:3001/createCart", reg_response.insertID);
-        const newCart = new Cart(response.insertID, cart_response.insertID);
+            return {stt_code: 1, msg: "Register successful"};
+        } catch (error) {
+            console.log(error);
+            return {stt_code: 0, msg: "Register failed"};
+        }
 
-        return {stt_code: 1, msg: "Register successful"};
+        
     }
 
-    async setInfo(account, name, email, tel){
+    async setInfo(id, role, name, email, tel){
         const error = [];
-        var nameRegex = /^(?!.*[!@#$%^&*(),.?":{}|<>])[^\s]{8,16}$/;
+        const nameRegex = /^(?!.*[!@#$%^&*(),.?":{}|<>])[^\s]{8,16}$/;
         const emailRegex = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/;
         const telRegex = /^\d{10}$/;
 
-        if (name !== undefined && re.test(name)){
-           account.name = name;
+        if (name !== undefined && nameRegex.test(name)){
         }
         else{
-            error.push(username);
+            error.push(name);
         }
         
         if (email !== undefined && emailRegex.test(email)){
-            account.email = email;
         }
         else{
             error.push(email);
         }
         
         if (tel !== undefined && telRegex.test(tel)){
-            account.tel = tel;
         }
         else{
             error.push(tel);
@@ -142,35 +137,81 @@ class AccountManager {
             email: email,
             tel: tel,
         };
-        const accType = getAccType(account);
+        if (role === "Customer"){
+            role = "c";
+        }
+        else {
+            role = "e";
+        }
 
-        await axios.put(`/update-acc/${accType}/${account.id}`, data);
+        await axios.put(`http://localhost:3001/update-acc/${role}/${id}`, data);
     }
 
-    setPassword(account, newPassword, oldPassword){
-        var re = /^(?=.*[a-zA-Z])$/;
-        const oldpwd = bcrypt.hashSync(oldPassword); 
-        const accType = this.getAccType(account);
+    setPassword(id, role, newPassword, oldPassword){
+        const re = /^(?=.*[a-zA-Z])$/;
+        
+        if (role === "Customer"){
+            role = "c";
+        }
+        else {
+            role = "e";
+        }
 
-        if (re.test(newPassword && account.password === oldpwd)){
-            const hashedPassword = bcrypt.hashSync(newPassword, 10);
+        if (re.test(newPassword) === re.test(oldPassword)){
+            const hashedPassword = encryptText(newPassword);
             const data = { pwd: hashedPassword };
             
-            axios.put(`/update-acc/${accType}/${account.id}`, data);
-            account.password = hashedPassword;
+            axios.put(`http://localhost:3001/update-acc/${role}/${id}`, data);
+        }
+        
+    }
+
+    async getInfo(username){
+        const emp = await axios.get(`http://localhost:3001/employee-info/${username}`);
+        const cus = await axios.get(`http://localhost:3001/customer-info/${username}`);
+        
+        if (emp.data.return_value.length){
+            const data = {
+                id: emp.data.return_value[0].EmpID,
+                username: emp.data.return_value[0].username,
+                name: emp.data.return_value[0].emp_name,
+                role: emp.data.return_value[0].role,
+                email: emp.data.return_value[0].email,
+                tel: emp.data.return_value[0].tel,
+                role: emp.data.return_value[0].role,
+                id: emp.data.return_value[0].EmpID
+            }
+
+            return data;
+        }
+        else if (cus.data.return_value.length){
+            const cartID = await axios.get(`http://localhost:3001/get-cart-id/${cus.data.return_value[0].CustID}`);
+            const data = {
+                id: cus.data.return_value[0].CustID,
+                username: cus.data.return_value[0].username,
+                name: cus.data.return_value[0].cus_name,
+                email: cus.data.return_value[0].email,
+                tel: cus.data.return_value[0].tel,
+                loc: cus.data.return_value[0].loc,
+                id: cus.data.return_value[0].CustID, 
+                cartID: cartID.data.return_value[0].CartID
+            }
+
+            return data;
+        }
+        else{
+            return {role: "WHO?", id: null};
         }
     }
 
-    getAccType(account){
-        if (account instanceof(Customer)){
-            accType = "Customer";
-        }
-        else if (account instanceof(Employee)){
-            accType = "Employee";
-        }
 
-        return accType;
+    async getAllSeller(){
+        const response = await axios.get('http://localhost:3001/get-all-seller');
+
+        return response.data.return_value;
     }
+    
+    
 }
 
 export default AccountManager;
