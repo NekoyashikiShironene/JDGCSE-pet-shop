@@ -9,6 +9,7 @@ function HomeNavbar() {
 
     const handleLogout = (event) => {
         setIsLoggedIn(false);
+        setAccount(null);
         navigate("/");
     }
 
@@ -28,19 +29,64 @@ function HomeNavbar() {
                         <Nav className="ml-auto">
                             {
                                 isLoggedIn ? (
+
                                     <>
-                                        <Link to="/cart">
-                                            <Button variant="primary" className='mx-2'>My Cart</Button>
-                                        </Link>
-                                        <Link to="/orders">
-                                            <Button variant="primary" className='mx-2'>My Orders</Button>
-                                        </Link>
+                                        {
+                                            account.role === "Customer" && (
+                                                <>
+                                                    <Link to="/cart">
+                                                        <Button variant="primary" className='mx-2'>My Cart</Button>
+                                                    </Link>
+                                                    <Link to="/orders">
+                                                        <Button variant="primary" className='mx-2'>My Orders</Button>
+                                                    </Link>
+
+
+                                                </>
+
+                                            )}
+
+
+                                        {["Employee", "Admin"].includes(account.role) && (
+                                            <>
+
+                                                <Link to="/customer-orders">
+                                                    <Button variant="success" className='mx-2'>New Orders</Button>
+                                                </Link>
+
+                                                <Link to="/cart">
+                                                    <Button variant="primary" className='mx-2'>Order status</Button>
+                                                </Link>
+
+
+                                            </>
+
+                                        )}
+
+
+                                        {account.role === "Admin" && (
+                                            <>
+                                                <Link to="/orders">
+                                                    <Button variant="success" className='mx-2'>New Orders</Button>
+                                                </Link>
+
+                                                <Link to="/cart">
+                                                    <Button variant="success" className='mx-2'>Order status</Button>
+                                                </Link>
+
+
+                                            </>
+
+                                        )}
+
 
                                         <Link to="/cart">
                                             <Button variant="primary" className='mx-2'>My Account</Button>
                                         </Link>
-                                        
+
                                         <Button variant="outline-primary" className="mx-2" onClick={handleLogout}>Logout</Button>
+
+
                                     </>
 
                                 ) : (
